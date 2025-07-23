@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Kelas 1 - SDN 09/IV Kota Jambi</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hadir-btn.active { background-color: #4CAF50; color: white; }
+        .izin-btn.active { background-color: #FFC107; color: white; }
+        .sakit-btn.active { background-color: #2196F3; color: white; }
+        .alfa-btn.active { background-color: #F44336; color: white; }
+        
+        .selected-date {
+            background-color: #3B82F6;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <!-- Header -->
+        <div class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-6">
+            <h1 class="text-3xl font-bold mb-2">Sistem Absensi Digital</h1>
+            <div class="flex justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <img src="logo.png" alt="Logo SDN 09/IV Kota Jambi" class="h-16 w-16 object-contain hidden md:block">
+                    <div>
+                        <h2 class="text-xl">Kelas 1 - SDN 09/IV Kota Jambi</h2>
+                        <p class="text-blue-100">Wali Kelas: Tri Yudha Setiawan, M.Pd</p>
+                    </div>
+                </div>
+                <img src="logo.png" alt="Logo SDN 09/IV Kota Jambi" class="h-20 w-20 object-contain">
+            </div>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button id="tab-absensi" class="tab-button active py-2 px-4 font-medium text-blue-600 border-b-2 border-blue-600">Absensi Harian</button>
+            <button id="tab-rekap-bulanan" class="tab-button py-2 px-4 font-medium text-gray-500 hover:text-blue-600">Rekap Bulanan</button>
+            <button id="tab-rekap-semester" class="tab-button py-2 px-4 font-medium text-gray-500 hover:text-blue-600">Rekap Semester</button>
+        </div>
+        
+        <!-- Absensi Hari Ini Section -->
+        <div id="absensi-section" class="section-content">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">Absensi Hari Ini</h2>
+                    <div class="flex items-center space-x-4">
+                        <input type="date" id="tanggal-absensi" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="simpan-absensi" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                            Simpan Absensi
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Absensi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="daftar-siswa" class="bg-white divide-y divide-gray-200">
+                            <!-- Siswa list will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rekap Bulanan Section -->
+        <div id="rekap-bulanan-section" class="section-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Rekap Absensi Bulanan</h2>
+                
+                <div class="flex items-center mb-6">
+                    <select id="bulan-rekap" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mr-4">
+                        <option value="0">Januari</option>
+                        <option value="1">Februari</option>
+                        <option value="2">Maret</option>
+                        <option value="3">April</option>
+                        <option value="4">Mei</option>
+                        <option value="5">Juni</option>
+                        <option value="6">Juli</option>
+                        <option value="7">Agustus</option>
+                        <option value="8">September</option>
+                        <option value="9">Oktober</option>
+                        <option value="10">Nopember</option>
+                        <option value="11">Desember</option>
+                    </select>
+                    
+                    <select id="tahun-rekap" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                    </select>
+                    
+                    <button id="tampilkan-rekap" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        Tampilkan Rekap
+                    </button>
+                    
+                    <button id="cetak-rekap" class="ml-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        Cetak
+                    </button>
+                </div>
+                
+                <div id="calendar-container" class="mb-6">
+                    <div id="calendar-header" class="flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-medium">Juni 2026</h3>
+                    </div>
+                    <div id="calendar" class="grid grid-cols-7 gap-1 mb-2">
+                        <div class="text-center py-2 font-medium text-gray-500">Minggu</div>
+                        <div class="text-center py-2 font-medium text-gray-500">Senin</div>
+                        <div class="text-center py-2 font-medium text-gray-500">Selasa</div>
+                        <div class="text-center py-2 font-medium text-gray-500">Rabu</div>
+                        <div class="text-center py-2 font-medium text-gray-500">Kamis</div>
+                        <div class="text-center py-2 font-medium text-gray-500">Jumat</div>
+                        <div class="text-center py-2 font-medium text-gray-500">Sabtu</div>
+                        <!-- Days will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table id="tabel-rekap-bulanan" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hadir</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Izin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sakit</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alfa</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Rekap data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rekap Semester Section -->
+        <div id="rekap-semester-section" class="section-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Rekap Absensi Semester</h2>
+                
+                <div class="flex items-center mb-6">
+                    <select id="semester-rekap" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mr-4">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                    </select>
+                    
+                    <select id="tahun-semester" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                    </select>
+                    
+                    <button id="tampilkan-rekap-semester" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        Tampilkan Rekap
+                    </button>
+                    
+                    <button id="cetak-rekap-semester" class="ml-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                        Cetak
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table id="tabel-rekap-semester" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hadir</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Izin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sakit</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alfa</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persentase</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rata-rata</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Rekap semester data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Data siswa
+            const daftarSiswa = [
+                "ADIBA AZZAHRA ARNANTA",
+                "AFNAN GAUZAN",
+                "ALIFYA NUR ROHIM",
+                "ALIKA NAYLA PUTRI",
+                "ARION GIYATSA PUMADI",
+                "ARKAN NURIEL",
+                "ARSHAKA RASYID",
+                "ARSY FATIMAH AZ ZAHRAH",
+                "ASHEEQA ALEA ER JASMINE",
+                "DEFEENA PUTRI AZAHRA",
+                "DEVANO OZANDRA SATRIA",
+                "DHAFFANDRA LUTFHI",
+                "DIMAS PRASTYO",
+                "GHANIA HUMAIRA PUTRI",
+                "HANAN ATTAKI WIANGGORO",
+                "HASIQAH DZIKRA",
+                "JANZU YURA AHYU",
+                "KEEARA SHANUNA SEPTIAN",
+                "KHANZIA NAJWA KHIRANI",
+                "MEYTHA ASRI RELFHA",
+                "MUHAMAD HAIKAL AFRIANSYAH",
+                "MUHAMMAD ABIMANYU",
+                "NAYRA ALFIANA",
+                "RAFFASYA FADILAH UMAR",
+                "RAMADHAN AJI WICAKSONO",
+                "RATU APRILLIA BILQIS",
+                "SEAN",
+                "ZHAFIRA HAFIZAH"
+            ];
+            
+            // Inisialisasi data absensi di localStorage jika belum ada
+            if (!localStorage.getItem('absensiData')) {
+                localStorage.setItem('absensiData', JSON.stringify({}));
+            }
+            
+            // Set tanggal hari ini sebagai default
+            const today = new Date();
+            const tanggalInput = document.getElementById('tanggal-absensi');
+            const formattedDate = formatDate(today);
+            tanggalInput.value = formattedDate;
+            
+            // Generate tabel siswa untuk absensi harian
+            generateStudentList();
+            
+            // Tab navigation
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active', 'text-blue-600', 'border-blue-600'));
+                    tabs.forEach(t => t.classList.add('text-gray-500'));
+                    
+                    tab.classList.add('active', 'text-blue-600', 'border-blue-600');
+                    tab.classList.remove('text-gray-500');
+                    
+                    const sections = document.querySelectorAll('.section-content');
+                    sections.forEach(section => section.classList.add('hidden'));
+                    
+                    const targetId = tab.id.replace('tab-', '') + '-section';
+                    document.getElementById(targetId).classList.remove('hidden');
+                    
+                    // Jika menuju rekap bulanan, generate kalender
+                    if (targetId === 'rekap-bulanan-section') {
+                        generateCalendar(new Date());
+                    }
+                });
+            });
+            
+            // Event listener untuk tombol status absensi
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('status-btn')) {
+                    const siswaIndex = e.target.getAttribute('data-index');
+                    const status = e.target.getAttribute('data-status');
+                    const row = document.querySelector(`tr[data-index="${siswaIndex}"]`);
+                    
+                    // Reset all buttons for this student
+                    row.querySelectorAll('.status-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Activate clicked button
+                    e.target.classList.add('active');
+                    
+                    // Update keterangan input if needed
+                    if (status === 'hadir') {
+                        row.querySelector('input[name="keterangan"]').value = '';
+                    }
+                }
+            });
+            
+            // Event listener untuk simpan absensi
+            document.getElementById('simpan-absensi').addEventListener('click', function() {
+                const tanggal = document.getElementById('tanggal-absensi').value;
+                const absensiData = JSON.parse(localStorage.getItem('absensiData'));
+                
+                if (!absensiData[tanggal]) {
+                    absensiData[tanggal] = {};
+                }
+                
+                const rows = document.querySelectorAll('#daftar-siswa tr');
+                let adaData = false;
+                
+                rows.forEach(row => {
+                    const index = row.getAttribute('data-index');
+                    const nama = daftarSiswa[index];
+                    const btnHadir = row.querySelector('.hadir-btn');
+                    const btnIzin = row.querySelector('.izin-btn');
+                    const btnSakit = row.querySelector('.sakit-btn');
+                    const btnAlfa = row.querySelector('.alfa-btn');
+                    const keterangan = row.querySelector('input[name="keterangan"]').value;
+                    
+                    let status = '';
+                    if (btnHadir.classList.contains('active')) {
+                        status = 'hadir';
+                        adaData = true;
+                    } else if (btnIzin.classList.contains('active')) {
+                        status = 'izin';
+                        adaData = true;
+                    } else if (btnSakit.classList.contains('active')) {
+                        status = 'sakit';
+                        adaData = true;
+                    } else if (btnAlfa.classList.contains('active')) {
+                        status = 'alfa';
+                        adaData = true;
+                    }
+                    
+                    if (status) {
+                        absensiData[tanggal][nama] = {
+                            status: status,
+                            keterangan: status !== 'hadir' ? keterangan : ''
+                        };
+                    }
+                });
+                
+                if (adaData) {
+                    localStorage.setItem('absensiData', JSON.stringify(absensiData));
+                    alert('Data absensi berhasil disimpan untuk tanggal ' + formatDate(new Date(tanggal)));
+                } else {
+                    alert('Silakan masukkan data absensi untuk setidaknya satu siswa');
+                }
+            });
+            
+            // Event listener untuk ganti tanggal
+            tanggalInput.addEventListener('change', function() {
+                generateStudentList();
+            });
+            
+            // Event listener untuk rekap bulanan
+            document.getElementById('tampilkan-rekap').addEventListener('click', function() {
+                const bulan = parseInt(document.getElementById('bulan-rekap').value);
+                const tahun = parseInt(document.getElementById('tahun-rekap').value);
+                generateMonthlyReport(bulan, tahun);
+            });
+            
+            // Event listener untuk rekap semester
+            document.getElementById('tampilkan-rekap-semester').addEventListener('click', function() {
+                const semester = parseInt(document.getElementById('semester-rekap').value);
+                const tahun = parseInt(document.getElementById('tahun-semester').value);
+                generateSemesterReport(semester, tahun);
+            });
+            
+            // Fungsi untuk generate daftar siswa dengan status absensi
+            function generateStudentList() {
+                const tanggal = document.getElementById('tanggal-absensi').value;
+                const absensiData = JSON.parse(localStorage.getItem('absensiData'));
+                const tbody = document.getElementById('daftar-siswa');
+                tbody.innerHTML = '';
+                
+                daftarSiswa.forEach((siswa, index) => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-index', index);
+                    
+                    // Kolom nomor
+                    const noCell = document.createElement('td');
+                    noCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                    noCell.textContent = index + 1;
+                    row.appendChild(noCell);
+                    
+                    // Kolom nama
+                    const namaCell = document.createElement('td');
+                    namaCell.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900';
+                    namaCell.textContent = siswa;
+                    row.appendChild(namaCell);
+                    
+                    // Kolom status
+                    const statusCell = document.createElement('td');
+                    statusCell.className = 'px-6 py-4 whitespace-nowrap';
+                    
+                    const btnGroup = document.createElement('div');
+                    btnGroup.className = 'flex space-x-2';
+                    
+                    // Tombol Hadir
+                    const btnHadir = document.createElement('button');
+                    btnHadir.className = 'hadir-btn status-btn text-xs py-1 px-2 rounded border border-green-500 hover:bg-green-500 hover:text-white';
+                    btnHadir.setAttribute('data-index', index);
+                    btnHadir.setAttribute('data-status', 'hadir');
+                    btnHadir.textContent = 'H';
+                    btnHadir.title = 'Hadir';
+                    btnGroup.appendChild(btnHadir);
+                    
+                    // Tombol Izin
+                    const btnIzin = document.createElement('button');
+                    btnIzin.className = 'izin-btn status-btn text-xs py-1 px-2 rounded border border-yellow-500 hover:bg-yellow-500 hover:text-white';
+                    btnIzin.setAttribute('data-index', index);
+                    btnIzin.setAttribute('data-status', 'izin');
+                    btnIzin.textContent = 'I';
+                    btnIzin.title = 'Izin';
+                    btnGroup.appendChild(btnIzin);
+                    
+                    // Tombol Sakit
+                    const btnSakit = document.createElement('button');
+                    btnSakit.className = 'sakit-btn status-btn text-xs py-1 px-2 rounded border border-blue-500 hover:bg-blue-500 hover:text-white';
+                    btnSakit.setAttribute('data-index', index);
+                    btnSakit.setAttribute('data-status', 'sakit');
+                    btnSakit.textContent = 'S';
+                    btnSakit.title = 'Sakit';
+                    btnGroup.appendChild(btnSakit);
+                    
+                    // Tombol Alfa
+                    const btnAlfa = document.createElement('button');
+                    btnAlfa.className = 'alfa-btn status-btn text-xs py-1 px-2 rounded border border-red-500 hover:bg-red-500 hover:text-white';
+                    btnAlfa.setAttribute('data-index', index);
+                    btnAlfa.setAttribute('data-status', 'alfa');
+                    btnAlfa.textContent = 'A';
+                    btnAlfa.title = 'Alfa';
+                    btnGroup.appendChild(btnAlfa);
+                    
+                    statusCell.appendChild(btnGroup);
+                    row.appendChild(statusCell);
+                    
+                    // Kolom keterangan
+                    const keteranganCell = document.createElement('td');
+                    keteranganCell.className = 'px-6 py-4 whitespace-nowrap';
+                    
+                    const inputKeterangan = document.createElement('input');
+                    inputKeterangan.type = 'text';
+                    inputKeterangan.name = 'keterangan';
+                    inputKeterangan.className = 'w-full px-2 py-1 border border-gray-300 rounded-md';
+                    inputKeterangan.placeholder = 'Keterangan (jika ada)';
+                    
+                    // Cek apakah ada data yang tersimpan
+                    if (absensiData[tanggal] && absensiData[tanggal][siswa]) {
+                        const data = absensiData[tanggal][siswa];
+                        const activeBtn = row.querySelector(`.${data.status}-btn`);
+                        if (activeBtn) {
+                            activeBtn.classList.add('active');
+                        }
+                        inputKeterangan.value = data.keterangan || '';
+                    }
+                    
+                    keteranganCell.appendChild(inputKeterangan);
+                    row.appendChild(keteranganCell);
+                    
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Fungsi untuk generate laporan bulanan
+            function generateMonthlyReport(bulan, tahun) {
+                const absensiData = JSON.parse(localStorage.getItem('absensiData'));
+                const tbody = document.getElementById('tabel-rekap-bulanan').querySelector('tbody');
+                tbody.innerHTML = '';
+                
+                // Generate kalender untuk bulan yang dipilih
+                const firstDay = new Date(tahun, bulan, 1);
+                const lastDay = new Date(tahun, bulan + 1, 0);
+                generateCalendar(firstDay);
+                
+                daftarSiswa.forEach((siswa, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Kolom nomor
+                    const noCell = document.createElement('td');
+                    noCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                    noCell.textContent = index + 1;
+                    row.appendChild(noCell);
+                    
+                    // Kolom nama
+                    const namaCell = document.createElement('td');
+                    namaCell.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900';
+                    namaCell.textContent = siswa;
+                    row.appendChild(namaCell);
+                    
+                    // Hitung jumlah hadir, izin, sakit, alfa
+                    let hadir = 0, izin = 0, sakit = 0, alfa = 0;
+                    
+                    for (let date in absensiData) {
+                        const dateObj = new Date(date);
+                        if (dateObj.getMonth() === bulan && dateObj.getFullYear() === tahun) {
+                            if (absensiData[date][siswa]) {
+                                switch(absensiData[date][siswa].status) {
+                                    case 'hadir': hadir++; break;
+                                    case 'izin': izin++; break;
+                                    case 'sakit': sakit++; break;
+                                    case 'alfa': alfa++; break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Kolom hadir
+                    const hadirCell = document.createElement('td');
+                    hadirCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    hadirCell.textContent = hadir;
+                    row.appendChild(hadirCell);
+                    
+                    // Kolom izin
+                    const izinCell = document.createElement('td');
+                    izinCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    izinCell.textContent = izin;
+                    row.appendChild(izinCell);
+                    
+                    // Kolom sakit
+                    const sakitCell = document.createElement('td');
+                    sakitCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    sakitCell.textContent = sakit;
+                    row.appendChild(sakitCell);
+                    
+                    // Kolom alfa
+                    const alfaCell = document.createElement('td');
+                    alfaCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    alfaCell.textContent = alfa;
+                    row.appendChild(alfaCell);
+                    
+                    // Kolom persentase
+                    const persentaseCell = document.createElement('td');
+                    persentaseCell.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium';
+                    
+                    const total = hadir + izin + sakit + alfa;
+                    let persentase = 0;
+                    if (total > 0) {
+                        persentase = Math.round((hadir / total) * 100);
+                    }
+                    
+                    persentaseCell.textContent = persentase + '%';
+                    
+                    // Warna berdasarkan persentase
+                    if (persentase >= 90) {
+                        persentaseCell.classList.add('text-green-600');
+                    } else if (persentase >= 80) {
+                        persentaseCell.classList.add('text-yellow-600');
+                    } else if (persentase >= 70) {
+                        persentaseCell.classList.add('text-orange-600');
+                    } else {
+                        persentaseCell.classList.add('text-red-600');
+                    }
+                    
+                    row.appendChild(persentaseCell);
+                    
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Fungsi untuk generate laporan semester
+            function generateSemesterReport(semester, tahun) {
+                const absensiData = JSON.parse(localStorage.getItem('absensiData'));
+                const tbody = document.getElementById('tabel-rekap-semester').querySelector('tbody');
+                tbody.innerHTML = '';
+                
+                let startMonth, endMonth;
+                if (semester === 1) {
+                    startMonth = 6; // Juli
+                    endMonth = 11;   // Desember
+                } else {
+                    startMonth = 0; // Januari
+                    endMonth = 5;  // Juni
+                }
+                
+                daftarSiswa.forEach((siswa, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Kolom nomor
+                    const noCell = document.createElement('td');
+                    noCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                    noCell.textContent = index + 1;
+                    row.appendChild(noCell);
+                    
+                    // Kolom nama
+                    const namaCell = document.createElement('td');
+                    namaCell.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900';
+                    namaCell.textContent = siswa;
+                    row.appendChild(namaCell);
+                    
+                    // Hitung jumlah hadir, izin, sakit, alfa untuk semester
+                    let hadir = 0, izin = 0, sakit = 0, alfa = 0;
+                    
+                    for (let date in absensiData) {
+                        const dateObj = new Date(date);
+                        if (dateObj.getFullYear() === tahun && 
+                            dateObj.getMonth() >= startMonth && 
+                            dateObj.getMonth() <= endMonth) {
+                            
+                            if (absensiData[date][siswa]) {
+                                switch(absensiData[date][siswa].status) {
+                                    case 'hadir': hadir++; break;
+                                    case 'izin': izin++; break;
+                                    case 'sakit': sakit++; break;
+                                    case 'alfa': alfa++; break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Kolom hadir
+                    const hadirCell = document.createElement('td');
+                    hadirCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    hadirCell.textContent = hadir;
+                    row.appendChild(hadirCell);
+                    
+                    // Kolom izin
+                    const izinCell = document.createElement('td');
+                    izinCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    izinCell.textContent = izin;
+                    row.appendChild(izinCell);
+                    
+                    // Kolom sakit
+                    const sakitCell = document.createElement('td');
+                    sakitCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    sakitCell.textContent = sakit;
+                    row.appendChild(sakitCell);
+                    
+                    // Kolom alfa
+                    const alfaCell = document.createElement('td');
+                    alfaCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center';
+                    alfaCell.textContent = alfa;
+                    row.appendChild(alfaCell);
+                    
+                    // Kolom persentase per bulan
+                    const persentaseCell = document.createElement('td');
+                    persentaseCell.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium';
+                    
+                    const total = hadir + izin + sakit + alfa;
+                    let persentase = 0;
+                    if (total > 0) {
+                        persentase = Math.round((hadir / total) * 100);
+                    }
+                    
+                    persentaseCell.textContent = persentase + '%';
+                    
+                    // Warna berdasarkan persentase
+                    if (persentase >= 90) {
+                        persentaseCell.classList.add('text-green-600');
+                    } else if (persentase >= 80) {
+                        persentaseCell.classList.add('text-yellow-600');
+                    } else if (persentase >= 70) {
+                        persentaseCell.classList.add('text-orange-600');
+                    } else {
+                        persentaseCell.classList.add('text-red-600');
+                    }
+                    
+                    row.appendChild(persentaseCell);
+                    
+                    // Kolom rata-rata per bulan
+                    const rataCell = document.createElement('td');
+                    rataCell.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium';
+                    
+                    const jumlahBulan = endMonth - startMonth + 1;
+                    const rataRata = total > 0 ? Math.round(total / jumlahBulan) : 0;
+                    rataCell.textContent = rataRata;
+                    row.appendChild(rataCell);
+                    
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Fungsi untuk generate kalender bulanan
+            function generateCalendar(date) {
+                const calendarDiv = document.getElementById('calendar');
+                const headerDiv = document.getElementById('calendar-header');
+                
+                // Set judul kalender
+                const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                                    "Juli", "Agustus", "September", "Oktober", "Nopember", "Desember"];
+                headerDiv.querySelector('h3').textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+                
+                // Kosongkan kalender (setelah judul hari)
+                while (calendarDiv.children.length > 7) {
+                    calendarDiv.removeChild(calendarDiv.lastChild);
+                }
+                
+                // Dapatkan hari pertama bulan ini
+                const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+                
+                // Dapatkan hari terakhir bulan ini
+                const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+                
+                // Buat sel kosong untuk hari sebelum hari pertama bulan ini
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'text-center py-2 text-gray-300';
+                    calendarDiv.appendChild(emptyDiv);
+                }
+                
+                // Buat sel untuk setiap hari dalam bulan ini
+                for (let i = 1; i <= lastDay.getDate(); i++) {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'text-center py-2 hover:bg-gray-100 cursor-pointer tooltip';
+                    
+                    // Periksa apakah ada data absensi untuk hari ini
+                    const currentDate = new Date(date.getFullYear(), date.getMonth(), i);
+                    const formattedDate = formatDate(currentDate);
+                    const absensiData = JSON.parse(localStorage.getItem('absensiData'));
+                    
+                    // Jika ada data absensi, beri tanda dan tooltip
+                    if (absensiData[formattedDate]) {
+                        let countHadir = 0, countTidakHadir = 0;
+                        
+                        for (let siswa in absensiData[formattedDate]) {
+                            if (absensiData[formattedDate][siswa].status === 'hadir') {
+                                countHadir++;
+                            } else {
+                                countTidakHadir++;
+                            }
+                        }
+                        
+                        dayDiv.innerHTML = `<span>${i}</span>
+                                          <span class="tooltiptext">${countHadir} Hadir<br>${countTidakHadir} Tidak Hadir</span>`;
+                        
+                        // Highlight tanggal yang sudah ada datanya
+                        dayDiv.querySelector('span').classList.add('font-bold', 'text-blue-600');
+                    } else {
+                        dayDiv.textContent = i;
+                    }
+                    
+                    // Highlight tanggal yang dipilih
+                    if (currentDate.toDateString() === new Date().toDateString()) {
+                        dayDiv.querySelector('span').classList.add('selected-date');
+                    }
+                    
+                    calendarDiv.appendChild(dayDiv);
+                }
+            }
+            
+            // Fungsi untuk format tanggal ke YYYY-MM-DD
+            function formatDate(date) {
+                const d = new Date(date);
+                let month = '' + (d.getMonth() + 1);
+                let day = '' + d.getDate();
+                const year = d.getFullYear();
+                
+                if (month.length < 2) 
+                    month = '0' + month;
+                if (day.length < 2) 
+                    day = '0' + day;
+                
+                return [year, month, day].join('-');
+            }
+        });
+    </script>
+</body>
+</html>
